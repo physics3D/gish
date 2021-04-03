@@ -1,0 +1,14 @@
+[package]
+name = "gish"
+version = "0.1.0"
+authors = ["physics3D <kroener.tobias@t-online.de>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gio = "0.8.1"
+glib = "0.9.3"
+gtk = "0.8.1"
+hotwatch = "0.4.5"
+vte-rs = "0.4.0"
