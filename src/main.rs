@@ -16,7 +16,9 @@ use myterminal::MyTerminal;
 
 use hotwatch::Hotwatch;
 
-const PRETTY_GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+const GIT_BRANCH: &str = "git branch";
+const GIT_STATUS: &str = "git status --short";
 
 fn build_ui(application: &gtk::Application) {
     let repo_path = repo!();
@@ -33,19 +35,19 @@ fn build_ui(application: &gtk::Application) {
     main_terminal.widget.set_property_expand(true);
 
     let mut git_log_terminal = MyTerminal::new();
-    git_log_terminal.spawn_command(PRETTY_GIT_LOG, repo_path);
+    git_log_terminal.spawn_command(GIT_LOG, repo_path);
     git_log_terminal.terminal.set_can_focus(false);
     git_log_terminal.label.set_text("Git Log");
     git_log_terminal.widget.set_vexpand(false);
 
     let mut git_status_terminal = MyTerminal::new();
-    git_status_terminal.spawn_command("echo GIT STATUS; git status --short", repo_path);
+    git_status_terminal.spawn_command(GIT_STATUS, repo_path);
     git_status_terminal.label.set_text("Git Status");
     git_status_terminal.terminal.set_can_focus(false);
     git_status_terminal.widget.set_hexpand(false);
 
     let mut git_branch_terminal = MyTerminal::new();
-    git_branch_terminal.spawn_command("echo GIT BRANCH; git branch", repo_path);
+    git_branch_terminal.spawn_command(GIT_BRANCH, repo_path);
     git_branch_terminal.label.set_text("Git Branch");
     git_branch_terminal.terminal.set_can_focus(false);
     git_branch_terminal.widget.set_hexpand(false);
