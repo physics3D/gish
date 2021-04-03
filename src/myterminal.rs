@@ -67,25 +67,31 @@ impl MyTerminal {
             .unwrap();
     }
 
-    pub fn spawn_command(&mut self, command: &str, directory: &str) {
-        self.spawn(command, directory);
+    fn store_command(&mut self, command: &str, directory: &str) {
         self.last_command = command.to_string();
         self.last_dir = directory.to_string();
+    }
+
+    fn connect_exit(&mut self) {
+        self.terminal.connect_child_exited(|_, _| exit(0));
+    }
+
+    pub fn spawn_command(&mut self, command: &str, directory: &str) {
+        self.spawn(command, directory);
+        self.store_command(command, directory);
     }
 
     pub fn spawn_shell(&mut self, directory: &str) {
         let shell = env!("SHELL");
         self.spawn(shell, directory);
-        self.last_command = shell.to_string();
-        self.last_dir = directory.to_string();
-        self.terminal.connect_child_exited(|_, _| exit(0));
+        self.store_command(shell, directory);
+        self.connect_exit();
     }
 
     #[allow(dead_code)]
     pub fn spawn_shell_in_home_dir(&mut self) {
         let home = env!("HOME");
         self.spawn_shell(home);
-        self.terminal.connect_child_exited(|_, _| exit(0));
     }
 
     pub fn restart(&mut self) {
