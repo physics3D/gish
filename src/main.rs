@@ -5,7 +5,11 @@ macro_rules! repo {
     };
 }
 
-use std::{env::args, thread};
+use std::{
+    env::args,
+    process::{exit, Command},
+    thread,
+};
 
 use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
@@ -96,6 +100,16 @@ fn print_help_text() {
     println!("\tPATH\t\tA path to a git repository");
 }
 
+fn check_git_repo(directory: &str) -> bool {
+    Command::new("git")
+        .arg("rev-parse")
+        .arg("--is-inside-work-tree")
+        .current_dir(directory)
+        .status()
+        .expect("failed to check for git repo")
+        .success()
+}
+
 fn main() {
     // cheat: make gtk believe we don't handle cli args, give them an empty vector as cli args
     // and get the arguments ourselves
@@ -104,6 +118,7 @@ fn main() {
         //print please path + help text
         println!("Please supply a path to a git repository");
         print_help_text();
+        exit(1);
     } else {
         //no path supplied
         let arg = args().nth(1).unwrap();
@@ -111,16 +126,24 @@ fn main() {
             // print help text
             print_help_text();
         } else {
-            // run app
-            let application = gtk::Application::new(Some("com.kroener.tobias"), Default::default())
-                .expect("Initialization failed...");
+            //check if dir is a git repo
+            if check_git_repo(repo!()) {
+                // run app
+                let application =
+                    gtk::Application::new(Some("com.kroener.tobias"), Default::default())
+                        .expect("Initialization failed...");
 
-            application.connect_activate(|app| {
-                build_ui(app);
-            });
+                application.connect_activate(|app| {
+                    build_ui(app);
+                });
 
-            let empty_args = vec!["".to_string()];
-            application.run(&empty_args);
+                let empty_args = vec!["".to_string()];
+                application.run(&empty_args);
+            } else {
+                //its not, error
+                println!("Directory is not a git repository.");
+                exit(1);
+            }
         }
     }
 }
