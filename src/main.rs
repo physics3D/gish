@@ -16,7 +16,7 @@ use myterminal::MyTerminal;
 
 use hotwatch::Hotwatch;
 
-const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
 const GIT_BRANCH: &str = "git branch";
 const GIT_STATUS: &str = "git status --short";
 
