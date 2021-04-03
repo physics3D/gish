@@ -70,7 +70,6 @@ fn build_ui(application: &gtk::Application) {
             let mut hotwatch = Hotwatch::new().expect("hotwatch failed to initialize!");
             hotwatch
                 .watch(repo!(), move |_| {
-                    println!("foo");
                     let _ = sender.send("");
                 })
                 .expect("failed to watch directory!");
