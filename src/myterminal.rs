@@ -72,7 +72,7 @@ impl MyTerminal {
         self.last_dir = directory.to_string();
     }
 
-    fn connect_exit(&mut self) {
+    fn connect_exit(&self) {
         self.terminal.connect_child_exited(|_, _| exit(0));
     }
 
