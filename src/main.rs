@@ -65,6 +65,9 @@ fn build_ui(application: &gtk::Application) {
     //set focus
     main_terminal.terminal.grab_focus();
 
+    //set icon
+    window.set_icon_name(Some("git"));
+
     window.add(&grid);
 
     window.show_all();
