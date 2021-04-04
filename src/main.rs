@@ -118,12 +118,13 @@ fn main() {
     // and get the arguments ourselves
 
     if args().len() < 2 {
+        //no path supplied
         //print please path + help text
         println!("Please supply a path to a git repository");
         print_help_text();
         exit(1);
     } else {
-        //no path supplied
+        //path given
         let arg = args().nth(1).unwrap();
         if arg == "-h" || arg == "--help" {
             // print help text
