@@ -60,7 +60,7 @@ impl MyTerminal {
                 Some(directory),
                 &command_path,
                 &[],
-                SpawnFlags::DO_NOT_REAP_CHILD,
+                SpawnFlags::DEFAULT,
                 Some(&mut || {}),
                 Some(&Cancellable::new()),
             )
