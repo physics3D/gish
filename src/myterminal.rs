@@ -88,12 +88,6 @@ impl MyTerminal {
         self.connect_exit();
     }
 
-    #[allow(dead_code)]
-    pub fn spawn_shell_in_home_dir(&mut self) {
-        let home = env!("HOME");
-        self.spawn_shell(home);
-    }
-
     pub fn restart(&mut self) {
         self.spawn(
             &("clear; ".to_string() + &self.last_command),
