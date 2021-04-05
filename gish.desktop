@@ -4,6 +4,6 @@ Version=1.0
 Name=Gish
 Comment=A Shell for Git
 StartupWMClass=Gish
-Exec=/home/mistercode/.cargo/bin/gish
+Exec=/home/mistercode/programming/rust/gish/target/release/gish
 Type=Application
 Terminal=false
