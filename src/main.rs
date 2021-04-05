@@ -105,13 +105,14 @@ fn print_help_text() {
 }
 
 fn check_git_repo(directory: &str) -> bool {
-    Command::new("git")
+    let stderr = Command::new("git")
         .arg("rev-parse")
         .arg("--is-inside-work-tree")
         .current_dir(directory)
-        .status()
+        .output()
         .expect("failed to check for git repo")
-        .success()
+        .stderr;
+    stderr == vec![]
 }
 
 fn ask_for_path_and_restart() {
