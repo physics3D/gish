@@ -7,6 +7,7 @@ macro_rules! repo {
 
 use std::{
     env::args,
+    os::unix::process::CommandExt,
     process::{exit, Command},
     thread,
 };
@@ -15,10 +16,10 @@ use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
 use gtk::{ContainerExt, Grid, GridExt, GtkWindowExt, LabelExt, WidgetExt};
 
+use hotwatch::Hotwatch;
+
 mod myterminal;
 use myterminal::MyTerminal;
-
-use hotwatch::Hotwatch;
 
 const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
 const GIT_BRANCH: &str = "git branch";
@@ -113,16 +114,27 @@ fn check_git_repo(directory: &str) -> bool {
         .success()
 }
 
+fn ask_for_path_and_restart() {
+    use native_dialog::FileDialog;
+    let path = FileDialog::new()
+        .set_location("~")
+        .show_open_single_dir()
+        .unwrap();
+    let path = match path {
+        Some(path) => path,
+        None => exit(1),
+    };
+    Command::new("/proc/self/exe").arg(path).exec();
+}
+
 fn main() {
     // cheat: make gtk believe we don't handle cli args, give them an empty vector as cli args
     // and get the arguments ourselves
 
     if args().len() < 2 {
         //no path supplied
-        //print please path + help text
-        println!("Please supply a path to a git repository");
-        print_help_text();
-        exit(1);
+        //restart
+        ask_for_path_and_restart();
     } else {
         //path given
         let arg = args().nth(1).unwrap();

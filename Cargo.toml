@@ -11,4 +11,5 @@ gio = "0.8.1" # These versions have to match the dependencies of vte-rs
 glib = "0.9.3" # These versions have to match the dependencies of vte-rs
 gtk = "0.8.1" # These versions have to match the dependencies of vte-rs
 hotwatch = "0.4.5"
+native-dialog = "0.5.5"
 vte-rs = "0.4.0"
