@@ -7,3 +7,4 @@ StartupWMClass=Gish
 Exec=/home/mistercode/programming/rust/gish/target/release/gish
 Type=Application
 Terminal=false
+Icon=git
