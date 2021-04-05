@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=Gish
+Comment=A Shell for Git
+StartupWMClass=Gish
+Exec=/home/mistercode/.cargo/bin/gish
+Type=Application
+Terminal=false
