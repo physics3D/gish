@@ -16,6 +16,8 @@ use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
 use gtk::{ContainerExt, Grid, GridExt, GtkWindowExt, LabelExt, WidgetExt};
 
+use native_dialog::FileDialog;
+
 use hotwatch::Hotwatch;
 
 mod myterminal;
@@ -114,7 +116,6 @@ fn check_git_repo(directory: &str) -> bool {
 }
 
 fn ask_for_path_and_restart() {
-    use native_dialog::FileDialog;
     let path = FileDialog::new()
         .set_location("~")
         .show_open_single_dir()
