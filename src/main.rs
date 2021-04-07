@@ -29,9 +29,7 @@ fn build_ui(application: &gtk::Application) {
     let repo_path = repo!();
     let window = gtk::ApplicationWindow::new(application);
 
-    let title = "gish - git shell - ".to_string() + repo_path;
-    // let title = "gish";
-    window.set_title(&title);
+    window.set_title("gish - a git shell");
     window.set_default_size(1000, 600);
 
     let mut main_terminal = MyTerminal::new();
