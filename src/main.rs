@@ -82,7 +82,9 @@ fn build_ui(application: &gtk::Application) {
                     let _ = sender.send("");
                 })
                 .expect("failed to watch directory!");
-            loop {}
+
+            // cheat to keep thread open: sleep for u64::MAX value
+            thread::sleep(std::time::Duration::from_secs(u64::MAX));
         });
 
         receiver.attach(None, move |_| {
