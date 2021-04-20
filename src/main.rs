@@ -14,11 +14,13 @@ use std::{
 
 use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
-use gtk::{ContainerExt, Grid, GridExt, GtkWindowExt, LabelExt, WidgetExt};
+use gtk::{ContainerExt, GtkWindowExt, LabelExt, WidgetExt};
 
 use native_dialog::FileDialog;
 
 use hotwatch::Hotwatch;
+
+use gtk::PanedExt;
 
 mod myterminal;
 use myterminal::MyTerminal;
@@ -56,12 +58,18 @@ fn build_ui(application: &gtk::Application) {
     git_branch_terminal.terminal.set_can_focus(false);
     git_branch_terminal.widget.set_hexpand(false);
 
-    let grid = Grid::new();
+    //packing in vpaned for draging
+    let lower_right_paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+    lower_right_paned.pack1(&main_terminal.widget, true, false);
+    lower_right_paned.pack2(&git_branch_terminal.widget, false, false);
 
-    grid.attach(&git_log_terminal.widget, 0, 0, 3, 1);
-    grid.attach(&git_status_terminal.widget, 0, 1, 1, 1);
-    grid.attach(&main_terminal.widget, 1, 1, 1, 1);
-    grid.attach(&git_branch_terminal.widget, 2, 1, 1, 1);
+    let left_paned = gtk::Paned::new(gtk::Orientation::Horizontal);
+    left_paned.pack1(&git_status_terminal.widget, false, false);
+    left_paned.pack2(&lower_right_paned, true, false);
+
+    let main_paned = gtk::Paned::new(gtk::Orientation::Vertical);
+    main_paned.pack1(&git_log_terminal.widget, false, false);
+    main_paned.pack2(&left_paned, true, false);
 
     //set focus
     main_terminal.terminal.grab_focus();
@@ -69,7 +77,7 @@ fn build_ui(application: &gtk::Application) {
     //set icon
     window.set_icon_name(Some("git"));
 
-    window.add(&grid);
+    window.add(&main_paned);
 
     window.show_all();
 
