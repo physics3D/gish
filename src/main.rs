@@ -7,7 +7,6 @@ macro_rules! repo {
 
 use std::{
     env::args,
-    os::unix::process::CommandExt,
     process::{exit, Command},
     thread,
 };
@@ -15,8 +14,6 @@ use std::{
 use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
 use gtk::{ContainerExt, GtkWindowExt, LabelExt, WidgetExt};
-
-use native_dialog::FileDialog;
 
 use hotwatch::Hotwatch;
 
@@ -125,26 +122,14 @@ fn check_git_repo(directory: &str) -> bool {
     stderr == vec![]
 }
 
-fn ask_for_path_and_restart() {
-    let path = FileDialog::new()
-        .set_location("~")
-        .show_open_single_dir()
-        .unwrap();
-    let path = match path {
-        Some(path) => path,
-        None => exit(1),
-    };
-    Command::new("/proc/self/exe").arg(path).exec();
-}
-
 fn main() {
     // cheat: make gtk believe we don't handle cli args, give them an empty vector as cli args
     // and get the arguments ourselves
 
     if args().len() < 2 {
         //no path supplied
-        //restart
-        ask_for_path_and_restart();
+        println!("Please supply a path to a git repository.");
+        exit(2);
     } else {
         //path given
         let arg = args().nth(1).unwrap();
