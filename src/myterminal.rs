@@ -43,16 +43,9 @@ impl MyTerminal {
         }
     }
 
-    fn spawn(&self, command: &str, directory: &str) {
-        let command_path: Vec<&Path>;
-
-        if command.starts_with("/bin/") {
-            //shell
-            command_path = vec![Path::new(command)];
-        } else {
-            //command
-            command_path = vec![Path::new("/bin/sh"), Path::new("-c"), Path::new(command)];
-        }
+    pub fn spawn_command(&mut self, command: &str, directory: &str) {
+        let shell = get_shell();
+        let command_path = [Path::new(&shell), Path::new("-c"), Path::new(command)];
 
         self.terminal
             .spawn_sync(
@@ -65,33 +58,51 @@ impl MyTerminal {
                 Some(&Cancellable::new()),
             )
             .unwrap();
-    }
 
-    fn store_command(&mut self, command: &str, directory: &str) {
         self.last_command = command.to_string();
         self.last_dir = directory.to_string();
     }
 
-    fn connect_exit(&self) {
+    pub fn spawn_shell(&mut self, directory: &str) {
+        let shell = get_shell();
+
+        self.terminal
+            .spawn_sync(
+                PtyFlags::DEFAULT,
+                Some(directory),
+                &[Path::new(&shell)],
+                &[],
+                SpawnFlags::DEFAULT,
+                Some(&mut || {}),
+                Some(&Cancellable::new()),
+            )
+            .unwrap();
+
         self.terminal.connect_child_exited(|_, _| exit(0));
     }
 
-    pub fn spawn_command(&mut self, command: &str, directory: &str) {
-        self.spawn(command, directory);
-        self.store_command(command, directory);
-    }
+    pub fn restart(&self) {
+        let shell = get_shell();
+        let command_path = [
+            Path::new(&shell),
+            Path::new("-c"),
+            Path::new(&self.last_command),
+        ];
 
-    pub fn spawn_shell(&mut self, directory: &str) {
-        let shell = env!("SHELL");
-        self.spawn(shell, directory);
-        self.store_command(shell, directory);
-        self.connect_exit();
+        self.terminal
+            .spawn_sync(
+                PtyFlags::DEFAULT,
+                Some(&self.last_dir),
+                &command_path,
+                &[],
+                SpawnFlags::DEFAULT,
+                Some(&mut || {}),
+                Some(&Cancellable::new()),
+            )
+            .unwrap();
     }
+}
 
-    pub fn restart(&mut self) {
-        self.spawn(
-            &("clear; ".to_string() + &self.last_command),
-            &self.last_dir,
-        );
-    }
+fn get_shell() -> String {
+    env!("SHELL").to_string()
 }
