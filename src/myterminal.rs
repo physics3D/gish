@@ -83,11 +83,8 @@ impl MyTerminal {
 
     pub fn restart(&self) {
         let shell = get_shell();
-        let command_path = [
-            Path::new(&shell),
-            Path::new("-c"),
-            Path::new(&self.last_command),
-        ];
+        let command = "clear && ".to_string() + &self.last_command;
+        let command_path = [Path::new(&shell), Path::new("-c"), Path::new(&command)];
 
         self.terminal
             .spawn_sync(
