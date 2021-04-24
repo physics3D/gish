@@ -23,7 +23,7 @@ mod myterminal;
 use myterminal::MyTerminal;
 
 const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
-const GIT_BRANCH: &str = "git branch";
+const GIT_BRANCH: &str = "git branch -a";
 const GIT_STATUS: &str = "git status --short";
 
 fn build_ui(application: &gtk::Application) {
