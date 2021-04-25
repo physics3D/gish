@@ -100,6 +100,12 @@ impl MyTerminal {
     }
 }
 
+#[cfg(target_family = "unix")]
 fn get_shell() -> String {
     env!("SHELL").to_string()
+}
+
+#[cfg(target_family = "windows")]
+fn get_shell() -> String {
+    r"C:\Windows\System32\powershell.exe".to_string()
 }
