@@ -141,7 +141,7 @@ fn main() {
             if check_git_repo(repo!()) {
                 // run app
                 let application =
-                    gtk::Application::new(Some("com.kroener.tobias"), Default::default())
+                    gtk::Application::new(Some("com.kroener.tobias"), gio::ApplicationFlags::NON_UNIQUE)
                         .expect("Initialization failed...");
 
                 application.connect_activate(|app| {
