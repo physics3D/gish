@@ -3,10 +3,10 @@ use std::{path::Path, process::exit};
 use gio::Cancellable;
 use glib::SpawnFlags;
 use gtk::{
-    Box, BoxBuilder, ContainerExt, Label, LabelBuilder, Orientation, ScrolledWindow,
-    ScrolledWindowBuilder, WidgetExt,
+    prelude::{ContainerExt, WidgetExt},
+    Box, BoxBuilder, Label, LabelBuilder, Orientation, ScrolledWindow, ScrolledWindowBuilder,
 };
-use vte::{PtyFlags, Terminal, TerminalExt};
+use vte::{traits::TerminalExt, PtyFlags, Terminal};
 
 #[derive(Clone)]
 pub struct MyTerminal {
@@ -23,7 +23,7 @@ impl MyTerminal {
         let widget = BoxBuilder::new().orientation(Orientation::Vertical).build();
         let label = LabelBuilder::new().label("MyTerminal").build();
         let terminal = Terminal::new();
-        terminal.set_property_expand(true);
+        terminal.set_expand(true);
         let scrolled_window = ScrolledWindowBuilder::new()
             .min_content_height(100)
             .min_content_width(120)

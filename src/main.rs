@@ -1,4 +1,4 @@
-//macro that returns the path to the repository
+// macro that returns the path to the repository
 macro_rules! repo {
     () => {
         &args().nth(1).unwrap();
@@ -13,15 +13,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-use gio::{prelude::ApplicationExtManual, ApplicationExt};
+use gio::{prelude::ApplicationExtManual, traits::ApplicationExt};
+
 use glib::PRIORITY_DEFAULT;
-use gtk::{ContainerExt, GtkWindowExt, LabelExt, WidgetExt};
-
-use hotwatch::{Event, Hotwatch};
-
-use gtk::PanedExt;
+use gtk::prelude::{ContainerExt, GtkWindowExt, LabelExt, PanedExt, WidgetExt};
 
 mod myterminal;
+use hotwatch::{Event, Hotwatch};
 use myterminal::MyTerminal;
 
 const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
@@ -37,7 +35,7 @@ fn build_ui(application: &gtk::Application) {
 
     let mut main_terminal = MyTerminal::new();
     main_terminal.spawn_shell(repo_path);
-    main_terminal.widget.set_property_expand(true);
+    main_terminal.widget.set_expand(true);
 
     let mut git_log_terminal = MyTerminal::new();
     git_log_terminal.spawn_command(GIT_LOG, repo_path);
@@ -136,9 +134,6 @@ fn check_git_repo(directory: &str) -> bool {
 }
 
 fn main() {
-    // cheat: make gtk believe we don't handle cli args, give them an empty vector as cli args
-    // and get the arguments ourselves
-
     if args().len() < 2 {
         //no path supplied
         println!("Please supply a path to a git repository.");
@@ -153,18 +148,20 @@ fn main() {
             //check if dir is a git repo
             if check_git_repo(repo!()) {
                 // run app
-                let application = gtk::Application::new(
-                    Some("com.kroener.tobias"),
-                    gio::ApplicationFlags::NON_UNIQUE,
-                )
-                .expect("Initialization failed...");
+                let mut flags = gio::ApplicationFlags::HANDLES_OPEN;
+                flags.insert(gio::ApplicationFlags::NON_UNIQUE);
+
+                let application = gtk::Application::new(Some("com.kroener.tobias"), flags);
 
                 application.connect_activate(|app| {
                     build_ui(app);
                 });
 
-                let empty_args = vec!["".to_string()];
-                application.run(&empty_args);
+                application.connect_open(|app, _, _| {
+                    build_ui(app);
+                });
+
+                application.run();
             } else {
                 //its not, error
                 println!("Directory is not a git repository.");
