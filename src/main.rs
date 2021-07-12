@@ -7,15 +7,17 @@ macro_rules! repo {
 
 use std::{
     env::args,
+    path::Path,
     process::{exit, Command},
     thread,
+    time::{Duration, Instant},
 };
 
 use gio::{prelude::ApplicationExtManual, ApplicationExt};
 use glib::PRIORITY_DEFAULT;
 use gtk::{ContainerExt, GtkWindowExt, LabelExt, WidgetExt};
 
-use hotwatch::Hotwatch;
+use hotwatch::{Event, Hotwatch};
 
 use gtk::PanedExt;
 
@@ -80,11 +82,22 @@ fn build_ui(application: &gtk::Application) {
 
     {
         let (sender, receiver) = glib::MainContext::channel(PRIORITY_DEFAULT);
+        let mut last_watch_time = Instant::now();
         thread::spawn(move || {
-            let mut hotwatch = Hotwatch::new().expect("hotwatch failed to initialize!");
+            let mut hotwatch = Hotwatch::new_with_custom_delay(Duration::from_secs(1))
+                .expect("hotwatch failed to initialize!");
             hotwatch
-                .watch(repo!(), move |_| {
-                    let _ = sender.send("");
+                .watch(repo!(), move |event| {
+                    // fix for freezing terminal
+                    let lockfile = Path::new(".git/index.lock").to_path_buf();
+                    if !(event == Event::Create(lockfile.clone())
+                        || event == Event::Remove(lockfile))
+                        && Instant::now() - last_watch_time > Duration::from_secs(2)
+                    {
+                        thread::sleep(Duration::from_secs(1));
+                        last_watch_time = Instant::now();
+                        let _ = sender.send("");
+                    }
                 })
                 .expect("failed to watch directory!");
 
@@ -140,9 +153,11 @@ fn main() {
             //check if dir is a git repo
             if check_git_repo(repo!()) {
                 // run app
-                let application =
-                    gtk::Application::new(Some("com.kroener.tobias"), gio::ApplicationFlags::NON_UNIQUE)
-                        .expect("Initialization failed...");
+                let application = gtk::Application::new(
+                    Some("com.kroener.tobias"),
+                    gio::ApplicationFlags::NON_UNIQUE,
+                )
+                .expect("Initialization failed...");
 
                 application.connect_activate(|app| {
                     build_ui(app);
