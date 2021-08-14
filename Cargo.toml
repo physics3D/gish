@@ -10,7 +10,8 @@ edition = "2018"
 gio = "0.14.0"
 glib = "0.14.2"
 gtk = "0.14.0"
-hotwatch = "0.4.5"
+ignore = "0.4.18"
+notify = "4.0.17"
 
 [dependencies.vte]
 git = "https://gitlab.com/Miridyan/vte-rs.git"

@@ -7,8 +7,8 @@ macro_rules! repo {
 
 use std::{
     env::args,
-    path::Path,
     process::{exit, Command},
+    sync::mpsc::channel,
     thread,
     time::{Duration, Instant},
 };
@@ -19,8 +19,9 @@ use glib::PRIORITY_DEFAULT;
 use gtk::prelude::{ContainerExt, GtkWindowExt, LabelExt, PanedExt, WidgetExt};
 
 mod myterminal;
-use hotwatch::{Event, Hotwatch};
+use ignore::WalkBuilder;
 use myterminal::MyTerminal;
+use notify::{watcher, RecursiveMode, Watcher};
 
 const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
 const GIT_BRANCH: &str = "git branch -a";
@@ -81,32 +82,40 @@ fn build_ui(application: &gtk::Application) {
     {
         let (sender, receiver) = glib::MainContext::channel(PRIORITY_DEFAULT);
         let mut last_watch_time = Instant::now();
-        thread::spawn(move || {
-            let mut hotwatch = Hotwatch::new_with_custom_delay(Duration::from_secs(1))
-                .expect("hotwatch failed to initialize!");
-            hotwatch
-                .watch(repo!(), move |event| {
-                    // fix for freezing terminal
-                    let lockfile = Path::new(".git/index.lock").to_path_buf();
-                    if !(event == Event::Create(lockfile.clone())
-                        || event == Event::Remove(lockfile))
-                        && Instant::now() - last_watch_time > Duration::from_secs(2)
-                    {
-                        thread::sleep(Duration::from_secs(1));
-                        last_watch_time = Instant::now();
-                        let _ = sender.send("");
-                    }
-                })
-                .expect("failed to watch directory!");
 
-            // cheat to keep thread open: sleep for u64::MAX value
-            thread::sleep(std::time::Duration::from_secs(u64::MAX));
+        thread::spawn(move || {
+            let (fake_sender, fake_receiver) = channel(); // just to get events
+            let mut watcher = watcher(fake_sender, Duration::from_secs(1)).unwrap();
+
+            for result in WalkBuilder::new(repo!())
+                .hidden(true)
+                .follow_links(true)
+                .max_depth(None)
+                .max_filesize(None)
+                .build()
+            {
+                match result {
+                    Ok(entry) => watcher
+                        .watch(entry.path(), RecursiveMode::NonRecursive)
+                        .unwrap(),
+                    Err(err) => println!("ERROR: {}", err),
+                }
+            }
+
+            loop {
+                let _ = fake_receiver.recv().unwrap();
+                sender.send("").unwrap();
+            }
         });
 
         receiver.attach(None, move |_| {
-            git_status_terminal.restart();
-            git_log_terminal.restart();
-            git_branch_terminal.restart();
+            if Instant::now() - last_watch_time > Duration::from_secs(2) {
+                git_status_terminal.restart();
+                git_log_terminal.restart();
+                git_branch_terminal.restart();
+
+                last_watch_time = Instant::now();
+            }
 
             glib::Continue(true)
         });
