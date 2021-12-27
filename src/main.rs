@@ -1,7 +1,7 @@
 // macro that returns the path to the repository
 macro_rules! repo {
     () => {
-        &args().nth(1).unwrap();
+        &args().nth(1).unwrap()
     };
 }
 
@@ -26,6 +26,8 @@ use notify::{watcher, RecursiveMode, Watcher};
 const GIT_LOG: &str = "git log --reverse --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"; // from https://ma.ttias.be/pretty-git-log-in-one-line/
 const GIT_BRANCH: &str = "git branch -a";
 const GIT_STATUS: &str = "git status --short";
+
+const WAIT_TIME: Duration = Duration::from_secs(1);
 
 fn build_ui(application: &gtk::Application) {
     let repo_path = repo!();
@@ -85,7 +87,7 @@ fn build_ui(application: &gtk::Application) {
 
         thread::spawn(move || {
             let (fake_sender, fake_receiver) = channel(); // just to get events
-            let mut watcher = watcher(fake_sender, Duration::from_secs(1)).unwrap();
+            let mut watcher = watcher(fake_sender, WAIT_TIME).unwrap();
 
             for result in WalkBuilder::new(repo!())
                 .hidden(true)
@@ -104,18 +106,18 @@ fn build_ui(application: &gtk::Application) {
 
             loop {
                 let _ = fake_receiver.recv().unwrap();
-                sender.send("").unwrap();
+                if Instant::now() - last_watch_time > WAIT_TIME {
+                    thread::sleep(WAIT_TIME);
+                    last_watch_time = Instant::now();
+                    sender.send(()).unwrap();
+                }
             }
         });
 
         receiver.attach(None, move |_| {
-            if Instant::now() - last_watch_time > Duration::from_secs(2) {
-                git_status_terminal.restart();
-                git_log_terminal.restart();
-                git_branch_terminal.restart();
-
-                last_watch_time = Instant::now();
-            }
+            git_status_terminal.restart();
+            git_log_terminal.restart();
+            git_branch_terminal.restart();
 
             glib::Continue(true)
         });
