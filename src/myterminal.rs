@@ -1,4 +1,4 @@
-use std::{path::Path, process::exit};
+use std::{path::Path, process::exit,env};
 
 use gio::Cancellable;
 use glib::SpawnFlags;
@@ -102,7 +102,7 @@ impl MyTerminal {
 
 #[cfg(target_family = "unix")]
 fn get_shell() -> String {
-    env!("SHELL").to_string()
+    env::var("SHELL").unwrap().to_string()
 }
 
 #[cfg(target_family = "windows")]
